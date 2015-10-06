@@ -14,6 +14,8 @@ from PyQt4.QtCore import QAbstractTableModel,QVariant, Qt
 calc_labels = ['A/(A+B)', 'B/(A+B)', 'A/B'] #row labels for calculated data
 threshold_labels = {False:'Basso', True:'Buono'} # labels for threshold comparison result
 
+perc_format = lambda x : "%4.1f%%"%(x*100) if isinstance(x,(long,int,float)) else x
+
 #loaded_data = pd.DataFrame(index = ['A','B'], columns = ['2015','2016','2017'], 
 #    data=[[100,101,102],[99,99,98]])
 
