@@ -8,10 +8,9 @@ when data is updated
 
 @author: giuseppe
 """
-
-from model_pandas_dataframe import *
 from PyQt4.QtCore import Signal,QObject
-import os
+import os, pandas as pd
+
 
 test_data = pd.DataFrame(index = ['A','B'], columns = ['2015','2016','2017'], data=[[100,101,102],[99,99,98]])
 

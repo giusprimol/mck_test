@@ -54,10 +54,16 @@ class MyWindowClass(QtGui.QMainWindow, mainwindow_class):
         self.model.loaded_data.loadfile('./test1.txt')
     
     def setupFigure(self):        
+        plotLayout = self.findChild(QtGui.QVBoxLayout,'verticalLayout_data')
         self.figure = Figure()#(2.0, 4.0), dpi=100)
         self.canvas = FigureCanvas(self.figure)
+        
+        self.canvas.updateGeometry()
         self.canvas.setParent(self.findChild(QtGui.QWidget,'widget_plot'))
-                
+        plotLayout.addWidget(self.canvas)
+        plotLayout.setStretch(1,0)        
+        plotLayout.setStretch(2,1)
+        
     def setupSignals(self):
         # connecting signals from the data model...        
         self.model.loaded_data.loaded_data_changed.connect(self.handle_loaded_data_changed)
@@ -126,13 +132,13 @@ class MyWindowClass(QtGui.QMainWindow, mainwindow_class):
         print rects, labels
         for rect, label in zip(rects, labels):
             height = rect.get_height()
-            axes.text(rect.get_x() + rect.get_width()/2, height + 5, label, 
-                    ha='center', va='bottom', rotation='vertical',
-                    transform=axes.transAxes)
+            axes.text(rect.get_x()+rect.get_width()/2., height * 1.05, label, 
+                    ha='center', va='bottom', rotation='vertical')
+                    #transform=axes.transAxes)
 
         axes.legend(ncol=3)
         axes.set_title('Andamento')
-        axes.set_ylim(axes.get_ylim()[0], 1.3*data.max().max())
+        axes.set_ylim(axes.get_ylim()[0], 1.5*data.max().max())
         
         self.canvas.draw()
     
