@@ -12,6 +12,7 @@ from PyQt4.QtGui import *
 from PyQt4 import QtCore, QtGui, uic
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib import pyplot as plt
 
 from model import *
 
@@ -24,6 +25,17 @@ from model import *
 #==============================================================================
 
 
+perc_format = lambda x : "%4.1f%%"%(x*100) if isinstance(x,(long,int,float)) else x
+
+def set_table_data(table,df, formatter = perc_format):
+    #print df    
+    table.setRowCount(df.shape[0])
+    table.setColumnCount(df.shape[1])
+    for (i,(name,row)) in enumerate(df.iterrows()):
+        for (j,(idx,item)) in enumerate(row.iteritems()):
+            table.setItem(i, j, QtGui.QTableWidgetItem(formatter(item)))
+    table.setHorizontalHeaderLabels(df.columns)
+    table.setVerticalHeaderLabels(df.index)
  
 # load the main, show and help windows
 mainwindow_class = uic.loadUiType("mainWin.ui")[0]
@@ -38,6 +50,8 @@ class MyWindowClass(QtGui.QMainWindow, mainwindow_class):
         self.setupUi(self)
         self.setupFigure()
         self.setupSignals()
+        
+        self.model.loaded_data.loadfile('./test1.txt')
     
     def setupFigure(self):        
         self.figure = Figure()#(2.0, 4.0), dpi=100)
@@ -63,7 +77,7 @@ class MyWindowClass(QtGui.QMainWindow, mainwindow_class):
         
 
     def handle_loaded_data_changed(self):
-        # update list boxes
+        # update list boxes, turning off event firing
         data_series = sorted(self.model.loaded_data.data.index)
         comboA = self.findChild(QtGui.QWidget,'combo_serA')
         comboA.blockSignals(True)        
@@ -82,18 +96,48 @@ class MyWindowClass(QtGui.QMainWindow, mainwindow_class):
 
     
     def handle_thresh_data_changed(self):
-        
-        pass
+        # thresholds have changed, recalc summary        
+        self.model.summary_data.update_data(self.model.calc_data.data, self.model.thresh_data.data)
+
     
     def summary_data_data_changed(self):
         # update interface
-        pass
+        set_table_data(self.findChild(QtGui.QWidget,'table_summary_data'), 
+            self.model.summary_data.data)
     
     def handle_calc_data_changed(self):
         # update summary data
+        self.model.summary_data.update_data(self.model.calc_data.data, self.model.thresh_data.data)
         # update interface
-        pass
+        set_table_data(self.findChild(QtGui.QWidget,'table_calc_data'), 
+            self.model.calc_data.data)
+        self.redraw_figure(self.model.calc_data.data.T)
         
+    def redraw_figure(self,data):
+        self.figure.gca().clear()
+        axes = self.figure.add_subplot(111)
+        data.plot(kind='bar', ax = axes)
+        
+        
+        rects = axes.patches
+        
+        # Now make some labels
+        labels = ["%3.1f %%" % (f*100) for f in data.values.ravel()]
+        print rects, labels
+        for rect, label in zip(rects, labels):
+            height = rect.get_height()
+            axes.text(rect.get_x() + rect.get_width()/2, height + 5, label, 
+                    ha='center', va='bottom', rotation='vertical',
+                    transform=axes.transAxes)
+
+        axes.legend(ncol=3)
+        axes.set_title('Andamento')
+        axes.set_ylim(axes.get_ylim()[0], 1.3*data.max().max())
+        
+        self.canvas.draw()
+    
+    
+    
     def handle_press_loadData(self):
         try:        
             (filename, filetype) = QtGui.QFileDialog.getOpenFileNameAndFilter(parent = None, 
@@ -106,14 +150,13 @@ class MyWindowClass(QtGui.QMainWindow, mainwindow_class):
     
     def handle_combo_selection_change(self, dummy):
         # update calc data
-        print "selChange"
         comboA = self.findChild(QtGui.QWidget,'combo_serA')
         comboB = self.findChild(QtGui.QWidget,'combo_serB')
         self.model.calc_data.update_data(self.model.loaded_data.data, 
             str(comboA.currentText()), str(comboB.currentText()))
     
     def handle_thresh_box_change(self, dummy):
-        self.model.summary_data.update_data(self.model.calc_data,        
+        self.model.thresh_data.update_data(        
             self.findChild(QtGui.QWidget,'spb_thr1').value,
             self.findChild(QtGui.QWidget,'spb_thr2').value,
             self.findChild(QtGui.QWidget,'spb_thr3').value)

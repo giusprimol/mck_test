@@ -307,7 +307,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>400</width>
+            <width>320</width>
             <height>130</height>
            </size>
           </property>
@@ -317,6 +317,9 @@
             <height>130</height>
            </size>
           </property>
+          <attribute name="horizontalHeaderDefaultSectionSize">
+           <number>90</number>
+          </attribute>
          </widget>
         </item>
         <item>
@@ -329,16 +332,19 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>120</width>
+            <width>200</width>
             <height>130</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>120</width>
+            <width>200</width>
             <height>130</height>
            </size>
           </property>
+          <attribute name="horizontalHeaderDefaultSectionSize">
+           <number>90</number>
+          </attribute>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>
